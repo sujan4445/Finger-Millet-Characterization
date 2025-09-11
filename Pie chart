@@ -1,0 +1,215 @@
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+library(showtext)
+
+showtext_auto()
+
+title_size <- 70
+label_size <- 23
+legend_size <- 60
+
+create_pie_chart <- function(data, trait_name, label_tag) {
+  df <- data %>%
+    filter(Trait == trait_name) %>%
+    mutate(Percentage = Frequency / sum(Frequency) * 100,
+           Label = paste0(round(Percentage), "%"))
+  
+  ggplot(df, aes(x = "", y = Frequency, fill = Character)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    theme_void() +
+    geom_text(aes(label = Label), position = position_stack(vjust = 0.5), 
+              size = label_size, family = "Times New Roman") +
+    ggtitle(paste0(label_tag, " ", trait_name)) +
+    theme(
+      plot.title = element_text(hjust = 0.7, family = "Times New Roman", size = title_size),
+      legend.title = element_blank(),
+      legend.text = element_text(family = "Times New Roman", size = legend_size)
+    )
+}
+
+traits <- unique(Graph$Trait)
+labels <- letters[1:length(traits)]
+
+plots <- mapply(function(trait, label_tag) {
+  create_pie_chart(Graph, trait, paste0(label_tag, "."))
+}, traits, labels, SIMPLIFY = FALSE)
+
+n <- length(plots)
+half <- ceiling(n / 2)
+
+row1 <- plots[1:half]
+row2 <- plots[(half + 1):n]
+
+spacer <- ggplot() + theme_void()
+
+row1_plot <- wrap_plots(row1, nrow = 1)
+row2_plot <- wrap_plots(row2, nrow = 1)
+
+final_plot <- (row1_plot / spacer / row2_plot) + 
+  plot_layout(heights = c(1, 0.15, 1))
+
+ggsave("Pie_Charts11.tiff", plot = final_plot, width = 12, height = 6, dpi = 600, compression = "lzw")
+
+
+
+
+####READY###
+# === Load Required Libraries ===
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+library(showtext)
+data <- Graph 
+
+# === Enable Custom Fonts ===
+showtext_auto()
+
+# === Adjustable Text Size Parameters ===
+title_size <- 70     # Title Text Size
+label_size <- 23     # Labels inside pie chart (percentage labels)
+legend_size <- 60    # Legend Text Size
+
+# === Define Custom Color Palette ===
+custom_colors <- c(
+  "#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F",
+  "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC",
+  "#86BCB6", "#FABFD2", "#CFCFCF", "#8CD17D", "#D4A6C8"
+)
+
+# === Create Pie Chart Function ===
+create_pie_chart <- function(data, trait_name, label_tag) {
+  df <- data %>%
+    filter(Trait == trait_name) %>%
+    mutate(
+      Percentage = Frequency / sum(Frequency) * 100
+    ) %>%
+    arrange(desc(Character)) %>%
+    mutate(
+      cumulative = cumsum(Percentage) - (Percentage / 2),  # Midpoint for label position
+      Label = ifelse(Percentage >= 5, paste0(round(Percentage), "%"), "")  # Hide labels <5%
+    )
+  
+  ggplot(df, aes(x = "", y = Percentage, fill = Character)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    theme_void() +
+    geom_text(
+      aes(y = cumulative, label = Label),
+      size = label_size, family = "Times New Roman", color = "black"
+    ) +
+    ggtitle(paste0(label_tag, " ", trait_name)) +
+    theme(
+      plot.title = element_text(hjust = 0.7, family = "Times New Roman", size = title_size),
+      legend.title = element_blank(),
+      legend.text = element_text(family = "Times New Roman", size = legend_size)
+    ) +
+    scale_fill_manual(values = custom_colors)
+}
+
+# === Generate All Pie Charts ===
+traits <- unique(Graph$Trait)
+labels <- letters[1:length(traits)]
+
+plots <- mapply(function(trait, label_tag) {
+  create_pie_chart(Graph, trait, paste0(label_tag, "."))
+}, traits, labels, SIMPLIFY = FALSE)
+
+# === Arrange Plots in Two Rows with Gap ===
+n <- length(plots)
+half <- ceiling(n / 2)
+
+row1 <- plots[1:half]
+row2 <- plots[(half + 1):n]
+
+spacer <- ggplot() + theme_void()
+
+row1_plot <- wrap_plots(row1, nrow = 1)
+row2_plot <- wrap_plots(row2, nrow = 1)
+
+final_plot <- (row1_plot / spacer / row2_plot) + 
+  plot_layout(heights = c(1, 0.15, 1))
+
+# === Save as High-Resolution TIFF ===
+ggsave("Pie_Chartsgrowth.tiff", plot = final_plot, width = 12, height = 6, dpi = 600, compression = "lzw")
+
+
+#### READY ###
+
+# === Load Required Libraries ===
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+library(showtext)
+
+data <- Graph   # Your dataset
+
+# === Enable Custom Fonts ===
+showtext_auto()
+
+# === Adjustable Text Size Parameters ===
+title_size <- 90     # Title Text Size
+label_size <- 30    # Labels inside pie chart (percentage labels)
+legend_size <- 70    # Legend Text Size
+
+# === Define Custom Color Palette ===
+custom_colors <- c(
+  "#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F",
+  "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC",
+  "#86BCB6", "#FABFD2", "#CFCFCF", "#8CD17D", "#D4A6C8"
+)
+
+# === Create Pie Chart Function ===
+create_pie_chart <- function(data, trait_name, label_tag) {
+  df <- data %>%
+    filter(Trait == trait_name) %>%
+    mutate(
+      Percentage = Frequency / sum(Frequency) * 100
+    ) %>%
+    arrange(desc(Character)) %>%
+    mutate(
+      cumulative = cumsum(Percentage) - (Percentage / 2),  # Midpoint for label position
+      Label = ifelse(Percentage >= 5, paste0(round(Percentage), "%"), "")  # Hide labels <5%
+    )
+  
+  ggplot(df, aes(x = "", y = Percentage, fill = Character)) +
+    geom_bar(stat = "identity", width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    theme_void() +
+    geom_text(
+      aes(y = cumulative, label = Label),
+      size = label_size, family = "Times New Roman", color = "black"
+    ) +
+    ggtitle(paste0(label_tag, " ", trait_name)) +
+    theme(
+      plot.title = element_text(hjust = 0.5, family = "Times New Roman", size = title_size),
+      legend.title = element_blank(),
+      legend.text = element_text(family = "Times New Roman", size = legend_size)
+    ) +
+    scale_fill_manual(values = custom_colors)
+}
+
+# === Generate All Pie Charts ===
+traits <- unique(Graph$Trait)
+labels <- letters[1:length(traits)]
+
+plots <- mapply(function(trait, label_tag) {
+  create_pie_chart(Graph, trait, paste0(label_tag, "."))
+}, traits, labels, SIMPLIFY = FALSE)
+
+# === Arrange Plots in Grid (Bigger) ===
+# Instead of squeezing many in one row, use grid layout
+n <- length(plots)
+ncol <- 3   # 2 pie charts per row
+final_plot <- wrap_plots(plots, ncol = ncol)
+
+# === Save as High-Resolution TIFF (BIGGER SIZE) ===
+ggsave(
+  "Pie_Chartleaf.tiff",
+  plot = final_plot,
+  width = 12, height = 6, bg = "white", # much bigger figure
+  dpi = 600,
+  compression = "lzw"
+)
+
